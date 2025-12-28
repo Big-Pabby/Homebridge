@@ -1,0 +1,25 @@
+<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0" y="0"><defs><mask id="mask0_3088_2077" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="4.5" y="2" width="19" height="20">
+<path id="polygon" d="M22.536,10.8c0.952,0.524 0.952,1.876 0,2.4l-15.219,8.374c-0.927,0.51 -2.067,-0.151 -2.067,-1.199v-16.75c0,-1.048 1.14,-1.709 2.067,-1.199z" fill="#C4C4C4"/>
+</mask><linearGradient id="paint3_linear_3088_2077" x1="11.758000000000038" y1="8.154999999999973" x2="5.302999999999997" y2="14.663000000000011" gradientUnits="userSpaceOnUse">
+<stop stop-color="#00C3FF"/>
+<stop offset="1" stop-color="#1BE2FA"/>
+</linearGradient><linearGradient id="paint4_linear_3088_2077" x1="15.219000000000051" y1="11.863" x2="23.802999999999997" y2="11.863" gradientUnits="userSpaceOnUse">
+<stop stop-color="#FFCE00"/>
+<stop offset="1" stop-color="#FFEA00"/>
+</linearGradient><linearGradient id="paint5_linear_3088_2077" x1="5.527000000000044" y1="22.575000000000045" x2="16.947000000000003" y2="13.419999999999959" gradientUnits="userSpaceOnUse">
+<stop stop-color="#DE2453"/>
+<stop offset="1" stop-color="#FE3944"/>
+</linearGradient><linearGradient id="paint6_linear_3088_2077" x1="6.081000000000017" y1="1.4259999999999877" x2="16.948999999999955" y2="10.302000000000021" gradientUnits="userSpaceOnUse">
+<stop stop-color="#11D574"/>
+<stop offset="1" stop-color="#01F176"/>
+</linearGradient></defs><g id="google_play">
+<mask id="mask0_3088_2077" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="733" y="501" width="19" height="20">
+<path id="polygon" d="M751.036 509.8C751.988 510.324 751.988 511.676 751.036 512.2L735.817 520.574C734.89 521.084 733.75 520.423 733.75 519.375L733.75 502.625C733.75 501.577 734.89 500.916 735.817 501.426L751.036 509.8Z" fill="#C4C4C4"/>
+</mask>
+<g mask="url(#mask0_3088_2077)">
+<path id="blue" d="M5.726,21.41l9.493,-9.547l-9.337,-9.389c-0.372,0.239 -0.632,0.651 -0.632,1.151v16.75c0,0.427 0.189,0.789 0.476,1.035z" fill="url(#paint3_linear_3088_2077)"/>
+<path id="yellow" d="M22.536,10.8c0.951,0.524 0.951,1.876 0,2.4l-3.84,2.112l-3.477,-3.449l3.3,-3.273z" fill="url(#paint4_linear_3088_2077)"/>
+<path id="red" d="M18.697,15.312l-3.477,-3.449l-9.493,9.547c0.417,0.357 1.041,0.467 1.591,0.164z" fill="url(#paint5_linear_3088_2077)"/>
+<path id="green" d="M5.883,2.474l9.337,9.389l3.3,-3.273l-11.202,-6.164c-0.485,-0.267 -1.027,-0.213 -1.435,0.048z" fill="url(#paint6_linear_3088_2077)"/>
+</g>
+</g></svg>
