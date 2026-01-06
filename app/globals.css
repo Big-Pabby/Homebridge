@@ -18,6 +18,7 @@
   --color-hb-success: var(--hb-success);
   --color-hb-warning: var(--hb-warning);
   --color-hb-error: var(--hb-error);
+  --color-hb-success-green: var(--hb-success-green);
 
   /* shadcn colors */
   --color-background: var(--background);
@@ -76,7 +77,8 @@
   --hb-border-light: #eaeaea;
   --hb-success: #158348;
   --hb-warning: #68431a;
-  --hb-error: #aa3338;
+  --hb-error: #df1c41;
+  --hb-success-green: #30b066;
 
   /* shadcn defaults */
   --radius: 0.625rem;

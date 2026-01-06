@@ -15,7 +15,29 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Homebridge - Own Property Back Home Securely",
-  description: "Buy property and manage your investments with confidence, clarity, and complete visibility. Property investment made simple, safe, and stress-free for Nigerians abroad.",
+  description:
+    "Buy property and manage your investments with confidence, clarity, and complete visibility. Property investment made simple, safe, and stress-free for Nigerians abroad.",
+  openGraph: {
+    title: "Homebridge - Own Property Back Home Securely",
+    description:
+      "Buy property and manage your investments with confidence, clarity, and complete visibility. Property investment made simple, safe, and stress-free for Nigerians abroad.",
+    images: [
+      {
+        url: "/Graph.jpg",
+        width: 1200,
+        height: 630,
+        alt: "Homebridge - Property Investment Platform",
+      },
+    ],
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Homebridge - Own Property Back Home Securely",
+    description:
+      "Buy property and manage your investments with confidence, clarity, and complete visibility.",
+    images: ["/Graph.jpg"],
+  },
 };
 
 export default function RootLayout({
@@ -28,7 +50,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <NavBar />
+        {/* <NavBar /> */}
         {children}
       </body>
     </html>

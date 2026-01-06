@@ -1,5 +1,8 @@
-import { ChevronDown, Check } from "lucide-react";
+"use client";
+
+import { ChevronDown, Check, Instagram } from "lucide-react";
 import Image from "next/image";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -16,26 +19,114 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 
+function useInViewSection(threshold: number = 0.2) {
+  const ref = useRef<HTMLElement | null>(null);
+  const [isInView, setIsInView] = useState(false);
+
+  useEffect(() => {
+    const node = ref.current;
+    if (!node) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            setIsInView(true);
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold }
+    );
+
+    observer.observe(node);
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [threshold]);
+
+  return { ref, isInView };
+}
+
 export default function Home() {
+  const [activeStep, setActiveStep] = useState(0);
+  const [imageChanging, setImageChanging] = useState(false);
+
+  const heroReveal = useInViewSection(0.2);
+  const partnersReveal = useInViewSection(0.1);
+  const aboutReveal = useInViewSection(0.15);
+  const benefitsReveal = useInViewSection(0.15);
+  const featuresReveal = useInViewSection(0.15);
+  const howItWorksReveal = useInViewSection(0.15);
+  const pricingReveal = useInViewSection(0.15);
+  const faqReveal = useInViewSection(0.15);
+  const ctaReveal = useInViewSection(0.15);
+
+  useEffect(() => {
+    // small fade/slide animation when image changes
+    setImageChanging(true);
+    const timeout = setTimeout(() => setImageChanging(false), 40);
+    return () => clearTimeout(timeout);
+  }, [activeStep]);
+
+  const steps = useMemo(
+    () => [
+      {
+        step: "Step 1",
+        title: "Create an Account",
+        description:
+          "Sign up with your email or phone and get access to verified property listings.",
+        image: "/Register-filled.svg",
+      },
+      {
+        step: "Step 2",
+        title: "Browse & Purchase Properties",
+        description:
+          "Explore properties, choose your preferred payment plan, and purchase securely.",
+        image: "/browse.svg",
+      },
+      {
+        step: "Step 3",
+        title: "Track & Monitor Investments",
+        description:
+          "Monitor your properties, check payment progress, and list properties for resale.",
+        image: "/properties.svg",
+      },
+    ],
+    []
+  );
+
   return (
-    <main className="min-h-screen bg-white">
+    <main className="min-h-screen bg-white relative overflow-hidden">
+      {/* Subtle animated background orbs */}
+      <div className="pointer-events-none absolute inset-0 -z-10">
+        <div className="absolute -top-40 -left-32 h-80 w-80 rounded-full bg-hb-primary/10 blur-3xl animate-pulse" />
+        <div className="absolute top-1/2 -right-40 h-96 w-96 rounded-full bg-hb-dark/5 blur-3xl animate-[pulse_6s_ease-in-out_infinite]" />
+      </div>
       {/* Header */}
-     
 
       {/* Hero Section */}
-      <section className="pt-32 pb-20 px-8 lg:px-16 relative overflow-hidden">
+      <section
+        ref={heroReveal.ref as React.RefObject<HTMLElement>}
+        className={`pt-32 pb-20 px-8 lg:px-16 relative overflow-hidden transition-all duration-700 ease-out ${
+          heroReveal.isInView
+            ? "opacity-100 translate-y-0"
+            : "opacity-0 translate-y-6"
+        }`}
+      >
         <div className="max-w-360 mx-auto">
           <div className="flex flex-col items-center gap-16">
             <div className="flex-1 flex justify-center flex-col text-center max-w-3xl">
-              <h1 className="heading-xl text-hb-dark mb-6">
+              <h1 className="heading-xl text-hb-dark mb-6 transition-all duration-700 ease-out delay-100 transform-gpu">
                 Own property back home securely. From anywhere
               </h1>
-              <p className="body-lg text-hb-text-secondary mb-8 max-w-xl mx-auto">
+              <p className="body-lg text-hb-text-secondary mb-8 max-w-xl mx-auto transition-all duration-700 ease-out delay-200 transform-gpu">
                 Buy property and manage your investments with confidence,
                 clarity, and complete visibility all in one app.
               </p>
               <div className="flex md:flex-row flex-col justify-center gap-3">
-                <Button className="bg-hb-dark hover:bg-hb-dark/90 text-white rounded-lg px-6 h-12">
+                <Button className="bg-hb-dark hover:bg-hb-dark/90 text-white rounded-lg px-6 h-12 transform-gpu transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-hb-dark/20">
                   <Image
                     src="/icons/apple.svg"
                     alt=""
@@ -47,7 +138,7 @@ export default function Home() {
                 </Button>
                 <Button
                   variant="outline"
-                  className="border-hb-border-gray rounded-lg px-6 h-12"
+                  className="border-hb-border-gray rounded-lg px-6 h-12 transform-gpu transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-hb-border-gray/30"
                 >
                   <Image
                     src="/icons/play-store.svg"
@@ -66,23 +157,29 @@ export default function Home() {
                 alt="Homebridge App"
                 width={310}
                 height={624}
-                className="relative md:hidden block z-10"
+                className="relative md:hidden block z-10 transform-gpu transition-transform duration-700 ease-out delay-300"
               />
               <Image
                 src="/phone-lap.svg"
                 alt="Homebridge App"
                 width={1106}
                 height={640}
-               className="md:block hidden"
+                className="md:block hidden transform-gpu transition-transform duration-700 ease-out delay-300"
               />
-
             </div>
           </div>
         </div>
       </section>
 
       {/* Partners Section */}
-      <section className="pb-20 px-8 lg:px-16 bg-linear-to-b from-transparent to-white">
+      <section
+        ref={partnersReveal.ref as React.RefObject<HTMLElement>}
+        className={`pb-20 px-8 lg:px-16 bg-linear-to-b from-transparent to-white transition-all duration-700 ease-out ${
+          partnersReveal.isInView
+            ? "opacity-100 translate-y-0"
+            : "opacity-0 translate-y-6"
+        }`}
+      >
         <div className="max-w-360 mx-auto">
           <h2 className="heading-sm text-center text-hb-dark mb-8">
             Trusted by leading developers & partners
@@ -124,7 +221,15 @@ export default function Home() {
       </section>
 
       {/* About Section */}
-      <section id="about" className="pb-20 px-8 lg:px-20">
+      <section
+        id="about"
+        ref={aboutReveal.ref as React.RefObject<HTMLElement>}
+        className={`pb-20 px-8 lg:px-20 transition-all duration-700 ease-out ${
+          aboutReveal.isInView
+            ? "opacity-100 translate-y-0"
+            : "opacity-0 translate-y-6"
+        }`}
+      >
         <div className="max-w-360 mx-auto">
           <div className="grid grid-cols-1 gap-16 items-start">
             <div className="flex justify-between md:gap-16 gap-8  items-center flex-col md:flex-row md:text-left text-center">
@@ -160,7 +265,14 @@ export default function Home() {
       </section>
 
       {/* Benefits Section */}
-      <section className="pb-20 px-8 lg:px-20 ">
+      <section
+        ref={benefitsReveal.ref as React.RefObject<HTMLElement>}
+        className={`pb-20 px-8 lg:px-20 transition-all duration-700 ease-out ${
+          benefitsReveal.isInView
+            ? "opacity-100 translate-y-0"
+            : "opacity-0 translate-y-6"
+        }`}
+      >
         <div className="max-w-360 mx-auto">
           <div className="text-center max-w-2xl mx-auto mb-16">
             <h2 className="heading-lg text-hb-dark mb-6">
@@ -173,56 +285,74 @@ export default function Home() {
           </div>
 
           <div className="grid lg:grid-cols-2 items-stretch gap-6">
-            <Image
-              src="/visibility.svg"
-              alt=""
-              width={675}
-              height={600}
-              className="object-contain md:block hidden"
-            />
-            <Image
-              src="/visibility-mob.svg"
-              alt=""
-              width={675}
-              height={600}
-              className="object-contain md:hidden block"
-            />
+            {/* Left large illustration */}
+            <div className="relative overflow-hidden rounded-3xl">
+              <Image
+                src="/visibility.svg"
+                alt=""
+                width={675}
+                height={600}
+                className="object-contain md:block hidden transform-gpu transition-transform duration-700 ease-out hover:scale-105"
+              />
+              <Image
+                src="/visibility-mob.svg"
+                alt=""
+                width={675}
+                height={600}
+                className="object-contain md:hidden block transform-gpu transition-transform duration-700 ease-out hover:scale-105"
+              />
+            </div>
+
+            {/* Right stacked cards */}
             <div className="space-y-6">
-              <Image
-                src="/reality.svg"
-                alt=""
-                width={529}
-                height={294}
-                className="object-cover md:block hidden"
-              />
-              <Image
-                src="/flex-mob.svg"
-                alt=""
-                width={529}
-                height={294}
-                className="object-cover md:hidden block"
-              />
-              <Image
-                src="/flex.svg"
-                alt=""
-                width={529}
-                height={294}
-                className="object-cover md:block hidden"
-              />
-              <Image
-                src="/reality-mob.svg"
-                alt=""
-                width={529}
-                height={294}
-                className="object-cover md:hidden block"
-              />
+              <div className="relative overflow-hidden rounded-3xl transform-gpu transition-all duration-700 ease-out hover:-translate-y-1 hover:shadow-xl hover:shadow-hb-dark/10">
+                <Image
+                  src="/reality.svg"
+                  alt=""
+                  width={529}
+                  height={294}
+                  className="object-cover md:block hidden transform-gpu transition-transform duration-700 ease-out hover:scale-105"
+                />
+                <Image
+                  src="/flex-mob.svg"
+                  alt=""
+                  width={529}
+                  height={294}
+                  className="object-cover md:hidden block transform-gpu transition-transform duration-700 ease-out hover:scale-105"
+                />
+              </div>
+
+              <div className="relative overflow-hidden rounded-3xl transform-gpu transition-all duration-700 ease-out hover:-translate-y-1 hover:shadow-xl hover:shadow-hb-dark/10">
+                <Image
+                  src="/flex.svg"
+                  alt=""
+                  width={529}
+                  height={294}
+                  className="object-cover md:block hidden transform-gpu transition-transform duration-700 ease-out hover:scale-105"
+                />
+                <Image
+                  src="/reality-mob.svg"
+                  alt=""
+                  width={529}
+                  height={294}
+                  className="object-cover md:hidden block transform-gpu transition-transform duration-700 ease-out hover:scale-105"
+                />
+              </div>
             </div>
           </div>
         </div>
       </section>
 
       {/* Features Section */}
-      <section id="features" className="pb-20 px-8 lg:px-20">
+      <section
+        id="features"
+        ref={featuresReveal.ref as React.RefObject<HTMLElement>}
+        className={`pb-20 px-8 lg:px-20 transition-all duration-700 ease-out ${
+          featuresReveal.isInView
+            ? "opacity-100 translate-y-0"
+            : "opacity-0 translate-y-6"
+        }`}
+      >
         <div className="max-w-360 mx-auto">
           <div className="text-center max-w-xl mx-auto mb-16">
             <h2 className="heading-lg text-hb-dark mb-6">
@@ -264,7 +394,15 @@ export default function Home() {
       </section>
 
       {/* How it Works */}
-      <section id="how-it-works" className=" pb-20 px-8 lg:px-20">
+      <section
+        id="how-it-works"
+        ref={howItWorksReveal.ref as React.RefObject<HTMLElement>}
+        className={`pb-20 px-8 lg:px-20 transition-all duration-700 ease-out ${
+          howItWorksReveal.isInView
+            ? "opacity-100 translate-y-0"
+            : "opacity-0 translate-y-6"
+        }`}
+      >
         <div className="max-w-360 mx-auto">
           <div className="text-center max-w-xl mx-auto mb-16">
             <h2 className="heading-lg text-hb-dark mb-6">
@@ -276,39 +414,52 @@ export default function Home() {
           </div>
 
           <div className="flex justify-between items-start gap-12 flex-col lg:flex-row md:w-10/12 mx-auto">
-            <div className="md:w-5/12">
-              <Image
-                src="/Register-filled.svg"
-                alt=""
-                width={353}
-                height={404}
-                className="object-cover w-full"
-              />
+            <div className="md:w-5/12 w-full">
+              <div
+                className={`relative w-full aspect-353/404 overflow-hidden rounded-3xl bg-hb-bg-light transform-gpu transition-all duration-700 ease-out ${
+                  imageChanging
+                    ? "opacity-0 translate-y-3"
+                    : "opacity-100 translate-y-0"
+                }`}
+                key={steps[activeStep].image}
+              >
+                <Image
+                  src={steps[activeStep].image}
+                  alt={steps[activeStep].title}
+                  fill
+                  sizes="(min-width: 1024px) 40vw, 100vw"
+                  className="object-contain p-4"
+                  priority
+                />
+              </div>
             </div>
 
-            <div className="md:w-6/12 space-y-12">
-              <StepItem
-                step="Step 1"
-                title="Create an Account"
-                description="Sign up with your email or phone and get access to verified property listings."
-              />
-              <StepItem
-                step="Step 2"
-                title="Browse & Purchase Properties"
-                description="Explore properties, choose your preferred payment plan, and purchase securely."
-              />
-              <StepItem
-                step="Step 3"
-                title="Track & Monitor Investments"
-                description="Monitor your properties, check payment progress, and list properties for resale."
-              />
+            <div className="md:w-6/12 space-y-4">
+              {steps.map((item, idx) => (
+                <StepItem
+                  key={item.step}
+                  step={item.step}
+                  title={item.title}
+                  description={item.description}
+                  active={activeStep === idx}
+                  onClick={() => setActiveStep(idx)}
+                />
+              ))}
             </div>
           </div>
         </div>
       </section>
 
       {/* Pricing Section */}
-      <section id="pricing" className="pb-20 px-8 lg:px-20">
+      <section
+        id="pricing"
+        ref={pricingReveal.ref as React.RefObject<HTMLElement>}
+        className={`pb-20 px-8 lg:px-20 transition-all duration-700 ease-out ${
+          pricingReveal.isInView
+            ? "opacity-100 translate-y-0"
+            : "opacity-0 translate-y-6"
+        }`}
+      >
         <div className="max-w-360 mx-auto">
           <div className="text-center max-w-xl mx-auto mb-16">
             <h2 className="heading-lg text-hb-dark mb-6">
@@ -353,7 +504,14 @@ export default function Home() {
       </section>
 
       {/* FAQ Section */}
-      <section className="pb-20 px-8 lg:px-20 ">
+      <section
+        ref={faqReveal.ref as React.RefObject<HTMLElement>}
+        className={`pb-20 px-8 lg:px-20 transition-all duration-700 ease-out ${
+          faqReveal.isInView
+            ? "opacity-100 translate-y-0"
+            : "opacity-0 translate-y-6"
+        }`}
+      >
         <div className="max-w-360 mx-auto">
           <div className="text-center max-w-2xl mx-auto mb-16">
             <h2 className="heading-lg text-hb-dark mb-3">
@@ -461,7 +619,14 @@ export default function Home() {
       </section>
 
       {/* Final CTA */}
-      <section className="pb-20 px-8 lg:px-16 ">
+      <section
+        ref={ctaReveal.ref as React.RefObject<HTMLElement>}
+        className={`pb-20 px-8 lg:px-16 transition-all duration-700 ease-out ${
+          ctaReveal.isInView
+            ? "opacity-100 translate-y-0"
+            : "opacity-0 translate-y-6"
+        }`}
+      >
         <div className="max-w-360 mx-auto">
           <div className="grid lg:grid-cols-2 gap-12 items-center bg-hb-bg-light rounded-4xl relative md:px-12 px-5 md:py-20 py-10 overflow-hidden">
             <div>
@@ -523,7 +688,6 @@ export default function Home() {
                   alt="Homebridge"
                   width={33}
                   height={37}
-                  
                 />
                 <span className="text-2xl font-semibold text-white -tracking-wider">
                   Homebridge
@@ -563,27 +727,36 @@ export default function Home() {
                 </a>
               </div>
               <div className="flex gap-4">
-                <Image
-                  src="/icons/twitter.svg"
-                  alt="Twitter"
-                  width={17}
-                  height={15}
-                  className="brightness-0 invert cursor-pointer"
-                />
-                <Image
-                  src="/icons/facebook.svg"
-                  alt="Facebook"
-                  width={20}
-                  height={20}
-                   className="brightness-0 invert cursor-pointer"
-                />
-                <Image
-                  src="/icons/linkedin.svg"
-                  alt="LinkedIn"
-                  width={19}
-                  height={20}
-                   className="brightness-0 invert cursor-pointer"
-                />
+                <a target="_blank" href="https://x.com/myhomebridgeapp">
+                  <Image
+                    src="/icons/twitter.svg"
+                    alt="Twitter"
+                    width={17}
+                    height={15}
+                    className="brightness-0 invert cursor-pointer"
+                  />
+                </a>
+                <a
+                  target="_blank"
+                  href="https://www.instagram.com/homebridgeapp/"
+                >
+                  <Instagram
+                    size={20}
+                    className="brightness-0 invert cursor-pointer"
+                  />
+                </a>
+                <a
+                  target="_blank"
+                  href="https://www.linkedin.com/company/myhomebridgeapp"
+                >
+                  <Image
+                    src="/icons/linkedin.svg"
+                    alt="LinkedIn"
+                    width={19}
+                    height={20}
+                    className="brightness-0 invert cursor-pointer"
+                  />
+                </a>
               </div>
             </div>
           </div>
@@ -621,11 +794,15 @@ function PropertyTypeCard({
   image: string;
 }) {
   return (
-    <div className="flex-1 relative group cursor-pointer">
+    <div className="flex-1 relative group cursor-pointer transform-gpu transition-transform duration-500 hover:-translate-y-2">
       <div className="relative h-96 rounded-3xl overflow-hidden">
-        <img src={image} alt={title} className="w-full h-full object-cover" />
-        <div className="absolute inset-0 bg-linear-to-t from-black/60 to-transparent"></div>
-        <div className="absolute bottom-6 left-6 flex items-center gap-3 bg-white/10 backdrop-blur-md rounded-full px-5 py-3 border border-white/10">
+        <img
+          src={image}
+          alt={title}
+          className="w-full h-full object-cover transform-gpu transition-transform duration-700 group-hover:scale-105"
+        />
+        <div className="absolute inset-0 bg-linear-to-t from-black/60 to-transparent opacity-90 group-hover:opacity-70 transition-opacity duration-500" />
+        <div className="absolute bottom-6 left-6 flex items-center gap-3 bg-white/10 backdrop-blur-md rounded-full px-5 py-3 border border-white/10 transform-gpu transition-all duration-500 group-hover:bg-white/20 group-hover:-translate-y-1">
           <Image
             src={icon}
             alt=""
@@ -654,34 +831,41 @@ function FeatureRow({
   image: string;
 }) {
   return (
-    <div className={`flex justify-between md:flex-row flex-col gap-4 items-center ${imagePosition === "right" ? "md:flex-row-reverse" : ""}`}>
+    <div
+      className={`flex justify-between md:flex-row flex-col gap-8 items-center transform-gpu transition-all duration-700 ease-out hover:-translate-y-1 ${
+        imagePosition === "right" ? "md:flex-row-reverse" : ""
+      }`}
+    >
       {imagePosition === "left" && (
         <div className="md:w-6/12 flex justify-start">
-          <Image
-            src={image}
-            alt=""
-            width={560}
-            height={463}
-            className="object-contain"
-          />
+          <div className="relative overflow-hidden rounded-3xl transform-gpu transition-transform duration-700 ease-out hover:scale-[1.03] hover:shadow-xl hover:shadow-hb-dark/10">
+            <Image
+              src={image}
+              alt=""
+              width={560}
+              height={463}
+              className="object-contain"
+            />
+          </div>
         </div>
       )}
-        {imagePosition === "right" && (
+      {imagePosition === "right" && (
         <div className="md:w-6/12 flex justify-end ">
-          <Image
-            src={image}
-            alt=""
-            width={560}
-            height={463}
-            className="object-contain"
-          />
+          <div className="relative overflow-hidden rounded-3xl transform-gpu transition-transform duration-700 ease-out hover:scale-[1.03] hover:shadow-xl hover:shadow-hb-dark/10">
+            <Image
+              src={image}
+              alt=""
+              width={560}
+              height={463}
+              className="object-contain"
+            />
+          </div>
         </div>
       )}
-      <div className="text-center md:w-5/12">
+      <div className="text-center md:w-5/12 transform-gpu transition-all duration-500 ease-out hover:-translate-y-0.5">
         <h3 className="heading-sm text-hb-dark mb-4">{title}</h3>
         <p className="body-md text-hb-text-secondary">{description}</p>
       </div>
-    
     </div>
   );
 }
@@ -690,17 +874,28 @@ function StepItem({
   step,
   title,
   description,
+  active = false,
+  onClick,
 }: {
   step: string;
   title: string;
   description: string;
+  active?: boolean;
+  onClick?: () => void;
 }) {
   return (
-    <div className={`space-y-2 ${step === "Step 1" ? "bg-[#F8F6F9] rounded-4xl p-5" : ""}`}>
+    <button
+      onClick={onClick}
+      className={`w-full text-left space-y-2 rounded-4xl p-5 transition-all duration-300 transform-gpu ${
+        active
+          ? "bg-[#F8F6F9] shadow-lg shadow-hb-dark/10 -translate-y-0.5"
+          : "bg-white border border-hb-border-light hover:-translate-y-0.5 hover:shadow-md"
+      }`}
+    >
       <p className="label-sm text-hb-text-secondary">{step}</p>
       <h3 className="heading-sm text-hb-dark">{title}</h3>
       <p className="body-md text-hb-text-secondary">{description}</p>
-    </div>
+    </button>
   );
 }
 
@@ -737,10 +932,10 @@ function PricingCard({
         </div>
         <p className="body-md text-hb-text-secondary">{description}</p>
         <Button
-          className={`w-full ${
+          className={`w-full transform-gpu transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg ${
             featured
-              ? "bg-hb-primary hover:bg-hb-primary/90"
-              : "bg-white hover:bg-gray-50 text-hb-dark border border-hb-border-gray"
+              ? "bg-hb-primary hover:bg-hb-primary/90 shadow-hb-primary/30"
+              : "bg-white hover:bg-gray-50 text-hb-dark border border-hb-border-gray shadow-hb-border-gray/30"
           } rounded-full h-12`}
         >
           Get started
