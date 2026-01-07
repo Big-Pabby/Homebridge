@@ -738,7 +738,7 @@ export default function Home() {
                 </a>
                 <a
                   target="_blank"
-                  href="https://www.instagram.com/homebridgeapp/"
+                  href="https://www.instagram.com/myhomebridgeapp/"
                 >
                   <Instagram
                     size={20}
@@ -862,7 +862,7 @@ function FeatureRow({
           </div>
         </div>
       )}
-      <div className="text-center md:w-5/12 transform-gpu transition-all duration-500 ease-out hover:-translate-y-0.5">
+      <div className="text-left md:w-5/12 transform-gpu transition-all duration-500 ease-out hover:-translate-y-0.5">
         <h3 className="heading-sm text-hb-dark mb-4">{title}</h3>
         <p className="body-md text-hb-text-secondary">{description}</p>
       </div>
