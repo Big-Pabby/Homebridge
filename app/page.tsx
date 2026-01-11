@@ -185,33 +185,51 @@ export default function Home() {
             Trusted by leading developers & partners
           </h2>
           <div className="flex flex-wrap items-center justify-center gap-20">
-            <Image src="/partners/base.svg" alt="Base" width={78} height={27} />
+          
             <Image
-              src="/partners/atlas.svg"
+              src="/partners/Ace.svg"
               alt="Atlas"
               width={85}
               height={27}
             />
             <Image
-              src="/partners/shape.svg"
+              src="/partners/Kolanut.svg"
+              alt="Atlas"
+              width={85}
+              height={27}
+            />
+            <Image
+              src="/partners/Novarick.svg"
               alt="Shape"
               width={92}
               height={27}
             />
             <Image
-              src="/partners/graphite.svg"
+              src="/partners/Thesaurus.svg"
               alt="Graphite"
               width={109}
               height={28}
             />
             <Image
-              src="/partners/imagine-ai.svg"
+              src="/partners/finebricks.svg"
               alt="Imagine AI"
               width={113}
               height={27}
             />
             <Image
-              src="/partners/queue.svg"
+              src="/partners/Veritasi.svg"
+              alt="Queue"
+              width={99}
+              height={27}
+            />
+            <Image
+              src="/partners/tribitat logo.svg"
+              alt="Queue"
+              width={99}
+              height={27}
+            />
+            <Image
+              src="/partners/Redan.svg"
               alt="Queue"
               width={99}
               height={27}
@@ -451,7 +469,7 @@ export default function Home() {
       </section>
 
       {/* Pricing Section */}
-      <section
+      {/* <section
         id="pricing"
         ref={pricingReveal.ref as React.RefObject<HTMLElement>}
         className={`pb-20 px-8 lg:px-20 transition-all duration-700 ease-out ${
@@ -501,7 +519,7 @@ export default function Home() {
             />
           </div>
         </div>
-      </section>
+      </section> */}
 
       {/* FAQ Section */}
       <section

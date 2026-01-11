@@ -4,7 +4,6 @@ import { Bell, Calendar, ChevronDown, MoreVertical, Search } from "lucide-react"
 import Image from "next/image"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Sidebar } from "@/components/admin/Sidebar"
 import ActivityPurchaseIcon from "@/public/icons/activity-purchase.svg"
 import ActivityReferralIcon from "@/public/icons/activity-referral.svg"
 import ActivityUserIcon from "@/public/icons/activity-user.svg"
@@ -118,8 +117,6 @@ const revenueBreakdown = [
 export default function AdminDashboard() {
   return (
     <div className="flex min-h-screen bg-[#f5f5f5]">
-      <Sidebar />
-      
       <main className="flex-1 overflow-auto">
         <div className="p-8">
           {/* Top Nav */}

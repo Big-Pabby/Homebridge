@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import { Sidebar } from "@/components/admin/Sidebar";
+import { AdminLayoutWrapper } from "@/components/admin/AdminLayoutWrapper";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -23,14 +23,5 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  return (
-    <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        <Sidebar />
-        <div className="ml-[272px]">{children}</div>
-      </body>
-    </html>
-  );
+  return <AdminLayoutWrapper>{children}</AdminLayoutWrapper>;
 }

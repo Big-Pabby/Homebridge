@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import UserAvatarIcon from "@/public/icons/user-avatar.svg";
+import { Icon } from "@iconify/react";
 
 export default function AdminLoginPage() {
   const [showPassword, setShowPassword] = useState(false);
@@ -21,10 +21,7 @@ export default function AdminLoginPage() {
           {/* User Avatar Icon */}
           <div className="w-21 h-21 rounded-full bg-[#f5f3f7] flex items-center justify-center">
             <div className="w-13 h-13 rounded-full bg-white flex items-center justify-center">
-              <UserAvatarIcon
-                className="w-5 h-5.5"
-                style={{ color: "#7d00ff" }}
-              />
+                <Icon icon="tabler:lock-filled" width="20" height="20"  style={{color: "#7d00ff"}} />
             </div>
           </div>
 
@@ -34,13 +31,13 @@ export default function AdminLoginPage() {
               className="text-2xl font-semibold text-[#0e0e0f]"
               style={{ letterSpacing: "-0.48px" }}
             >
-              Welcome back
+              Create Password
             </h1>
             <p
               className="text-base font-normal text-[#6b7280]"
               style={{ letterSpacing: "-0.16px" }}
             >
-              Glad to see you again, Login to your account
+              Secure your account with a strong passwod
             </p>
           </div>
         </div>
@@ -49,24 +46,7 @@ export default function AdminLoginPage() {
         <div className="flex flex-col gap-4">
           {/* Forms Container */}
           <div className="flex flex-col gap-4">
-            {/* Email Input */}
-            <div className="flex flex-col gap-2">
-              <Label
-                htmlFor="email"
-                className="text-sm font-medium text-[#0e0e0f]"
-                style={{ letterSpacing: "-0.14px" }}
-              >
-                Email
-              </Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="Enter your email"
-                className="h-13 rounded-xl bg-white! border-[#cfd2d6] text-sm"
-                
-              />
-            </div>
-
+           
             {/* Password Input */}
             <div className="flex flex-col gap-2">
               <Label
@@ -98,59 +78,51 @@ export default function AdminLoginPage() {
                 </button>
               </div>
             </div>
-          </div>
-
-          {/* Remember Me and Forgot Password */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Checkbox
-                id="remember"
-                checked={rememberMe}
-                onCheckedChange={(checked) => setRememberMe(checked === true)}
-                className="border-[#cfd2d6]"
-              />
+            <div className="flex flex-col gap-2">
               <Label
-                htmlFor="remember"
-                className="text-sm font-medium text-[#6b7280] cursor-pointer"
+                htmlFor="confirmPassword"
+                className="text-sm font-medium text-[#0e0e0f]"
                 style={{ letterSpacing: "-0.14px" }}
               >
-                Remember me
+                Confirm Password
               </Label>
+              <div className="relative">
+                <Input
+                  id="confirmPassword"
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Enter your password"
+                  className="h-13 rounded-xl bg-white! border-[#cfd2d6] pr-10 text-sm"
+                  
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#6b7280] hover:text-[#0e0e0f] transition-colors"
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                >
+                  {showPassword ? (
+                    <EyeOff className="w-5 h-5" />
+                  ) : (
+                    <Eye className="w-5 h-5" />
+                  )}
+                </button>
+              </div>
             </div>
-            <Link
-              href="/admin/forgot-password"
-              className="text-sm font-medium text-[#7d00ff] hover:underline"
-              style={{ letterSpacing: "-0.14px" }}
-            >
-              Forgot password?
-            </Link>
           </div>
+
+        
 
           {/* Login Button and Sign Up */}
           <div className="flex flex-col gap-9 mt-4">
+            <Link href={"/admin/dashboard"}>
             <Button
               className="w-full h-13 bg-[#7d00ff] hover:bg-[#7d00ff]/90 text-white rounded-full text-base font-semibold"
              
             >
-              Login
+              Continue
             </Button>
-
-            {/* Sign Up Link */}
-            <div className="flex items-center justify-center gap-1">
-              <span
-                className="text-base font-normal text-[#6b7280]"
-                style={{ letterSpacing: "-0.16px" }}
-              >
-                Don&apos;t have an account?
-              </span>
-              <Link
-                href="/admin/sign-up"
-                className="text-base font-medium text-[#7d00ff] hover:underline"
-                style={{ letterSpacing: "-0.16px" }}
-              >
-                Sign up
-              </Link>
-            </div>
+            </Link>
+          
           </div>
         </div>
       </div>
