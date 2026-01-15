@@ -2,6 +2,7 @@
 
 import Image from "next/image"
 import Link from "next/link"
+import { usePathname } from "next/navigation"
 import { ChevronDown, LayoutGrid } from "lucide-react"
 import HomebridgeLogo from "@/public/icons/homebridge-logo.svg"
 import DashboardIcon from "@/public/icons/dashboard-icon.svg"
@@ -16,9 +17,9 @@ import SettingsIcon from "@/public/icons/settings-icon.svg"
 import HelpDeskIcon from "@/public/icons/help-desk-icon.svg"
 
 const navigationItems = [
-  { name: "Dashboard", icon: DashboardIcon, href: "/admin/dashboard", active: true },
+  { name: "Dashboard", icon: DashboardIcon, href: "/admin/dashboard" },
   { name: "Users", icon: UsersIcon, href: "/admin/users", hasDropdown: true },
-  { name: "Property", icon: PropertyIcon, href: "/admin/property" },
+  { name: "Property", icon: PropertyIcon, href: "/admin/propertyf" },
   { name: "Resale Marketplace", icon: ResaleIcon, href: "/admin/resale", hasDropdown: true },
   { name: "Transactions", icon: TransactionsIcon, href: "/admin/transactions", hasDropdown: true },
   { name: "Referral", icon: ReferralIcon, href: "/admin/referral", hasDropdown: true },
@@ -32,6 +33,8 @@ const bottomItems = [
 ]
 
 export function Sidebar() {
+  const pathname = usePathname()
+  
   return (
     <aside className="w-[272px] fixed z-[100] top-0 h-screen left-0 overflow-y-auto bg-white border-r border-[#e7e8ea] flex flex-col">
       {/* Header */}
@@ -54,25 +57,26 @@ export function Sidebar() {
         <div className="flex flex-col gap-1">
           {navigationItems.map((item) => {
             const Icon = item.icon
+            const isActive = pathname === item.href
             return (
               <Link
                 key={item.name}
                 href={item.href}
                 className={`
-                  flex items-center justify-between px-3 py-2.5 rounded-xl transition-all
-                  ${item.active 
+                  flex h-11 items-center justify-between px-3 py-2 rounded-xl transition-all
+                  ${isActive 
                     ? 'bg-[#f5f3f7]' 
                     : 'hover:bg-[#f5f3f7]'
                   }
                 `}
               >
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-3">
                   <Icon 
                     className="w-[18px] h-[18px]" 
-                    style={{ color: item.active ? '#7d00ff' : '#6b7280' }} 
+                    style={{ color: isActive ? '#7d00ff' : '#6b7280' }} 
                   />
                   <span 
-                    className={`text-sm font-medium ${item.active ? 'text-[#7d00ff]' : 'text-[#6b7280]'}`}
+                    className={`text-sm flex-1 font-medium ${isActive ? 'text-[#7d00ff]' : 'text-[#6b7280]'}`}
                     style={{ letterSpacing: '-0.14px' }}
                   >
                     {item.name}
