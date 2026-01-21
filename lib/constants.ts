@@ -1,5 +1,7 @@
 import type { PropertyType, PricingPlan, FAQItem, SocialLink, Step, Location } from "./types";
 
+export const ACCESS_TOKEN = "access-token";
+export const REFRESH_TOKEN = "refresh-token";
 // Currency formatter for Nigerian Naira
 export const formatNGN = (amount: number): string => {
   return `₦${amount.toLocaleString('en-NG')}`;

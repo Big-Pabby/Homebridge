@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -8,10 +9,31 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import UserAvatarIcon from "@/public/icons/user-avatar.svg";
+import { useAdminLogin } from "./hooks";
 
 export default function AdminLoginPage() {
+  const router = useRouter();
+  const loginMutation = useAdminLogin();
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    try {
+      const response = await loginMutation.mutateAsync({ email, password });
+      
+      if (response.success) {
+        // Redirect to dashboard on success
+        router.push("/admin/dashboard");
+      }
+    } catch (err: any) {
+      // Error is handled by the mutation's onError callback
+      console.error("Login error:", err);
+    }
+  };
 
   return (
     <div className="h-screen flex items-center gap-6 justify-between bg-white px-4">
@@ -62,8 +84,10 @@ export default function AdminLoginPage() {
                 id="email"
                 type="email"
                 placeholder="Enter your email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 className="h-13 rounded-xl bg-white! border-[#cfd2d6] text-sm"
-                
+                required
               />
             </div>
 
@@ -81,8 +105,10 @@ export default function AdminLoginPage() {
                   id="password"
                   type={showPassword ? "text" : "password"}
                   placeholder="Enter your password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
                   className="h-13 rounded-xl bg-white! border-[#cfd2d6] pr-10 text-sm"
-                  
+                  required
                 />
                 <button
                   type="button"
@@ -127,12 +153,13 @@ export default function AdminLoginPage() {
           </div>
 
           {/* Login Button and Sign Up */}
-          <div className="flex flex-col gap-9 mt-4">
+          <form onSubmit={handleSubmit} className="flex flex-col gap-9 mt-4">
             <Button
-              className="w-full h-13 bg-[#7d00ff] hover:bg-[#7d00ff]/90 text-white rounded-full text-base font-semibold"
-             
+              type="submit"
+              disabled={loginMutation.isPending}
+              className="w-full h-13 bg-[#7d00ff] hover:bg-[#7d00ff]/90 text-white rounded-full text-base font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Login
+              {loginMutation.isPending ? "Logging in..." : "Login"}
             </Button>
 
             {/* Sign Up Link */}
@@ -151,7 +178,7 @@ export default function AdminLoginPage() {
                 Sign up
               </Link>
             </div>
-          </div>
+          </form>
         </div>
       </div>
       <img

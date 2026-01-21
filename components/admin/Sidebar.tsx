@@ -19,7 +19,7 @@ import HelpDeskIcon from "@/public/icons/help-desk-icon.svg"
 const navigationItems = [
   { name: "Dashboard", icon: DashboardIcon, href: "/admin/dashboard" },
   { name: "Users", icon: UsersIcon, href: "/admin/users", hasDropdown: true },
-  { name: "Property", icon: PropertyIcon, href: "/admin/propertyf" },
+  { name: "Property", icon: PropertyIcon, href: "/admin/property" },
   { name: "Resale Marketplace", icon: ResaleIcon, href: "/admin/resale", hasDropdown: true },
   { name: "Transactions", icon: TransactionsIcon, href: "/admin/transactions", hasDropdown: true },
   { name: "Referral", icon: ReferralIcon, href: "/admin/referral", hasDropdown: true },
