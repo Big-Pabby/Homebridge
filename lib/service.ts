@@ -1,6 +1,7 @@
 import axios, { AxiosError, AxiosInstance } from "axios";
 import { ACCESS_TOKEN, REFRESH_TOKEN } from "@/lib/constants";
 import { useUserStore } from "@/lib/store/user-store";
+import { ApiResponse } from "@/types/api";
 
 const api: AxiosInstance = axios.create({
   baseURL: process.env.NEXT_PUBLIC_BASE_URL,
@@ -21,7 +22,7 @@ apiAdmin.interceptors.request.use(
     }
     return config;
   },
-  (error) => Promise.reject(error)
+  (error) => Promise.reject(error),
 );
 
 // Admin API Response interceptor
@@ -33,9 +34,15 @@ apiAdmin.interceptors.response.use(
       | undefined;
 
     const errorMessage =
-      errorData?.detail || errorData?.message || error.message || "An unknown error occurred";
+      errorData?.detail ||
+      errorData?.message ||
+      error.message ||
+      "An unknown error occurred";
 
-    if (errorMessage === "Not authenticated" || error.response?.status === 401) {
+    if (
+      errorMessage === "Not authenticated" ||
+      error.response?.status === 401
+    ) {
       localStorage.removeItem(ACCESS_TOKEN);
       localStorage.removeItem(REFRESH_TOKEN);
       // Clear user store
@@ -49,7 +56,7 @@ apiAdmin.interceptors.response.use(
     }
 
     return Promise.reject(new Error(errorMessage));
-  }
+  },
 );
 
 // Request interceptor
@@ -63,7 +70,7 @@ api.interceptors.request.use(
     }
     return config;
   },
-  (error) => Promise.reject(error)
+  (error) => Promise.reject(error),
 );
 
 // Response interceptor
@@ -88,38 +95,47 @@ api.interceptors.response.use(
 
     // Return a rejected Promise with a meaningful error message
     return Promise.reject(new Error(errorMessage));
-  }
+  },
 );
 
 // Type-safe API methods
 export const apiClient = {
-  get: <T>(url: string) => api.get<T>(url).then((response) => response.data),
+  get: <T>(url: string) =>
+    api.get<ApiResponse<T>>(url).then((response) => response.data),
 
   post: <T>(url: string, data?: unknown) =>
-    api.post<T>(url, data).then((response) => response.data),
+    api.post<ApiResponse<T>>(url, data).then((response) => response.data),
 
   patch: <T>(url: string, data?: unknown) =>
-    api.patch<T>(url, data).then((response) => response.data),
+    api.patch<ApiResponse<T>>(url, data).then((response) => response.data),
   put: <T>(url: string, data?: unknown) =>
-    api.put<T>(url, data).then((response) => response.data),
+    api.put<ApiResponse<T>>(url, data).then((response) => response.data),
 
   delete: <T>(url: string) =>
-    api.delete<T>(url).then((response) => response.data),
+    api.delete<ApiResponse<T>>(url).then((response) => response.data),
 };
 export const AdminApiClient = {
   get: <T>(url: string, config?: any) =>
-    apiAdmin.get<T>(url, config).then((response) => response.data),
+    apiAdmin.get<ApiResponse<T>>(url, config).then((response) => response.data),
 
   post: <T>(url: string, data?: unknown, config?: any) =>
-    apiAdmin.post<T>(url, data, config).then((response) => response.data),
+    apiAdmin
+      .post<ApiResponse<T>>(url, data, config)
+      .then((response) => response.data),
 
   patch: <T>(url: string, data?: unknown, config?: any) =>
-    apiAdmin.patch<T>(url, data, config).then((response) => response.data),
+    apiAdmin
+      .patch<ApiResponse<T>>(url, data, config)
+      .then((response) => response.data),
   put: <T>(url: string, data?: unknown, config?: any) =>
-    apiAdmin.put<T>(url, data, config).then((response) => response.data),
+    apiAdmin
+      .put<ApiResponse<T>>(url, data, config)
+      .then((response) => response.data),
 
   delete: <T>(url: string, config?: any) =>
-    apiAdmin.delete<T>(url, config).then((response) => response.data),
+    apiAdmin
+      .delete<ApiResponse<T>>(url, config)
+      .then((response) => response.data),
 };
 
 export { apiClient as api, AdminApiClient as admin };

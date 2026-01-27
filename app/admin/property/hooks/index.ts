@@ -6,14 +6,8 @@ import {
 } from "@tanstack/react-query";
 import { admin } from "@/lib/service";
 import { toast } from "@/lib/utils/toast";
-
-export const UseStory = (id: string) => {
-  const queryFn = async () => {
-    const response = await admin.get(`story_evaluations/${id}`);
-    return response;
-  };
-  return useQuery({ queryKey: ["stories", id], queryFn });
-};
+import { ApiResponse, ApiPaginatedResponse } from "@/types/api";
+import { Property } from "../types";
 
 export const useCreateProperty = () => {
   const queryClient = useQueryClient();
@@ -39,34 +33,12 @@ export const useCreateProperty = () => {
   });
 };
 
-interface Property {
-  id: string;
-  title: string;
-  location: string;
-  price: number;
-  bedrooms: number | null;
-  bathrooms: number | null;
-  square_footage: string | null;
-  type?: string;
-  total_units: number;
-  sold_units: number;
-  status: string;
-  featured_image: string;
-  is_provider_verified: boolean;
-  is_insured: boolean;
-  amenities?: string[];
-}
-
 interface PropertiesResponse {
-  success: boolean;
-  message: string;
-  data: {
-    data: Property[];
-    total: number;
-    page: number;
-    limit: number;
-    totalPages: number;
-  };
+  data: Property[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
 }
 
 interface UsePropertiesParams {
@@ -96,7 +68,7 @@ export const useProperties = (params: UsePropertiesParams = {}) => {
     provider = "",
   } = params;
 
-  const queryFn = async (): Promise<PropertiesResponse> => {
+  const queryFn = async () => {
     const queryParams = new URLSearchParams();
     queryParams.append("page", page.toString());
     queryParams.append("limit", limit.toString());
@@ -116,7 +88,7 @@ export const useProperties = (params: UsePropertiesParams = {}) => {
     const response = await admin.get<PropertiesResponse>(
       `properties?${queryParams.toString()}`,
     );
-    return response;
+    return response.data;
   };
 
   return useQuery({
@@ -135,4 +107,12 @@ export const useProperties = (params: UsePropertiesParams = {}) => {
     ],
     queryFn,
   });
+};
+
+export const usePropertyDetails = (id: string) => {
+  const queryFn = async () => {
+    const response = await admin.get<Property>(`properties/${id}`);
+    return response.data;
+  };
+  return useQuery({ queryKey: ["property", id], queryFn });
 };

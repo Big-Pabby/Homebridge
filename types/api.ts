@@ -24,7 +24,7 @@ export type User = Entity<{
   name: string;
   email: string;
   phone_number: string;
-  gender: 'Male' | 'Female' | string;
+  gender: "Male" | "Female" | string;
   birth_date: string; // ISO format datetime
   competition_track: string;
   school_name: string;
@@ -49,8 +49,22 @@ export type AuthResponse = {
   expires_in: string;
 };
 
+// Generic API Response wrapper for all API calls
 export type ApiResponse<T> = {
-  data: T;
-  message: string;
   success: boolean;
+  message: string;
+  data: T;
 };
+
+// Paginated data wrapper (used within ApiResponse)
+export type PaginatedData<T> = {
+  data: T[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+};
+
+// Combined type for paginated API responses
+export type ApiPaginatedResponse<T> = ApiResponse<PaginatedData<T>>;
+

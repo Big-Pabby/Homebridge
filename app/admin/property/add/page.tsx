@@ -57,6 +57,15 @@ const steps: Step[] = [
   },
 ];
 
+type PaymentPlan = {
+  id: string;
+  name: string;
+  duration: string;
+  totalPrice: string;
+  initialDeposit: string;
+  installmentAmount: string;
+};
+
 export default function AddPropertyPage() {
   const router = useRouter();
   const createPropertyMutation = useCreateProperty();
@@ -71,10 +80,8 @@ export default function AddPropertyPage() {
     fullAddress: "",
     latitude: null as number | null,
     longitude: null as number | null,
-    totalPrice: "",
     totalUnit: "",
-    initialDeposit: "",
-    paymentPlan: "",
+    paymentPlans: [] as PaymentPlan[],
     isVerified: "",
     isInsured: "",
     isInstallmentAvailable: "no",
@@ -85,6 +92,13 @@ export default function AddPropertyPage() {
     coverImage: null as File | null,
     galleryImages: [] as File[],
     documents: [] as File[],
+  });
+  const [newPaymentPlan, setNewPaymentPlan] = useState({
+    planType: "one-time", // one-time, six-months, twelve-months, custom
+    totalPrice: "",
+    initialDeposit: "",
+    customDuration: "", // For custom plans
+    installmentAmount: "",
   });
 
   // Helper function to check if property type requires residential details
@@ -145,20 +159,16 @@ export default function AddPropertyPage() {
         }
         return true;
       case 2: // Pricing
-        if (!formData.totalPrice.trim()) {
-          toast.error("Total price is required");
-          return false;
-        }
         if (!formData.totalUnit) {
           toast.error("Please select total units");
           return false;
         }
-        if (!formData.initialDeposit.trim()) {
-          toast.error("Initial deposit is required");
-          return false;
-        }
-        if (!formData.paymentPlan) {
-          toast.error("Please select a payment plan");
+        // Check for at least one one-time payment plan
+        const hasOneTimePlan = formData.paymentPlans.some(
+          (plan) => plan.duration === "0",
+        );
+        if (!hasOneTimePlan) {
+          toast.error("One Time Payment plan is required");
           return false;
         }
         return true;
@@ -241,7 +251,6 @@ export default function AddPropertyPage() {
       }
 
       // Pricing
-      formDataToSend.append("price", getNumericValue(formData.totalPrice));
       // Convert total_units to number - handle ranges by taking the first number
       const totalUnitsValue = formData.totalUnit.includes("-")
         ? formData.totalUnit.split("-")[0] // For "2-5", take "2"
@@ -249,11 +258,15 @@ export default function AddPropertyPage() {
           ? formData.totalUnit.replace("+", "") // For "10+", take "10"
           : formData.totalUnit; // For "1", keep as is
       formDataToSend.append("total_units", totalUnitsValue);
-      formDataToSend.append(
-        "initial_deposit",
-        getNumericValue(formData.initialDeposit),
-      );
-      formDataToSend.append("payment_plans", formData.paymentPlan);
+      // Convert payment plans to JSON array
+      const paymentPlansData = formData.paymentPlans.map((plan) => ({
+        plan_name: plan.name,
+        duration_months: Number(plan.duration) ,
+        price: getNumericValue(plan.totalPrice),
+        // initial_deposit: getNumericValue(plan.initialDeposit),
+        installment_amount: getNumericValue(plan.installmentAmount),
+      }));
+      formDataToSend.append("payment_plans", JSON.stringify(paymentPlansData));
 
       // Property Details
       formDataToSend.append(
@@ -273,8 +286,10 @@ export default function AddPropertyPage() {
           "square_footage",
           getNumericValue(formData.squareFootage),
         );
-        // Amenities as JSON array
-        formDataToSend.append("amenities", JSON.stringify(formData.amenities));
+        // Amenities - append each one individually
+        formData.amenities.forEach((amenity) => {
+          formDataToSend.append("amenities[]", amenity);
+        });
       }
 
       // Add LAND-specific field
@@ -357,6 +372,130 @@ export default function AddPropertyPage() {
   ) => {
     const numericValue = getNumericValue(value);
     setFormData({ ...formData, [field]: numericValue });
+  };
+
+  // Calculate installment amount based on base price, deposit, and duration
+  const calculateInstallmentAmount = (
+    basePrice: string,
+    deposit: string,
+    months: number,
+  ): string => {
+    const base = parseInt(getNumericValue(basePrice)) || 0;
+    const dep = parseInt(getNumericValue(deposit)) || 0;
+
+    if (base <= 0 || months <= 0) return "";
+
+    const amount = (base - dep) / months;
+    return Math.round(amount).toString();
+  };
+
+  // Get plan name and duration based on type
+  const getPlanNameAndDuration = (
+    planType: string,
+  ): { name: string; duration: string } => {
+    switch (planType) {
+      case "one-time":
+        return { name: "One-Time Payment", duration: "0" };
+      case "six-months":
+        return { name: "6 Months Plan", duration: "6" };
+      case "twelve-months":
+        return { name: "12 Months Plan", duration: "12" };
+      case "custom":
+        return {
+          name: `${newPaymentPlan.customDuration} Months Plan`,
+          duration: newPaymentPlan.customDuration,
+        };
+      default:
+        return { name: "", duration: "" };
+    }
+  };
+
+  // Add new payment plan
+  const handleAddPaymentPlan = () => {
+    const { name, duration } = getPlanNameAndDuration(newPaymentPlan.planType);
+
+    if (!newPaymentPlan.totalPrice.trim()) {
+      toast.error("Please enter total price for this plan");
+      return;
+    }
+    if (!newPaymentPlan.initialDeposit.trim()) {
+      toast.error("Please enter initial deposit for this plan");
+      return;
+    }
+    if (
+      newPaymentPlan.planType === "custom" &&
+      !newPaymentPlan.customDuration.trim()
+    ) {
+      toast.error("Please enter duration in months for custom plan");
+      return;
+    }
+
+    const plan: PaymentPlan = {
+      id: Date.now().toString(),
+      name,
+      duration,
+      totalPrice: newPaymentPlan.totalPrice,
+      initialDeposit: newPaymentPlan.initialDeposit,
+      installmentAmount: newPaymentPlan.installmentAmount,
+    };
+
+    setFormData({
+      ...formData,
+      paymentPlans: [...formData.paymentPlans, plan],
+    });
+
+    setNewPaymentPlan({
+      planType: "one-time",
+      totalPrice: "",
+      initialDeposit: "",
+      customDuration: "",
+      installmentAmount: "",
+    });
+
+    toast.success("Payment plan added successfully");
+  };
+
+  // Remove payment plan
+  const handleRemovePaymentPlan = (id: string) => {
+    setFormData({
+      ...formData,
+      paymentPlans: formData.paymentPlans.filter((plan) => plan.id !== id),
+    });
+    toast.success("Payment plan removed");
+  };
+
+  // Auto-calculate installment amount
+  const handlePlanDetailsChange = () => {
+    let months = 0;
+
+    if (newPaymentPlan.planType === "custom") {
+      months = parseInt(newPaymentPlan.customDuration) || 0;
+    } else {
+      const { duration } = getPlanNameAndDuration(newPaymentPlan.planType);
+      months = parseInt(duration) || 0;
+    }
+
+    if (months > 0) {
+      const calculated = calculateInstallmentAmount(
+        newPaymentPlan.totalPrice,
+        newPaymentPlan.initialDeposit,
+        months,
+      );
+      if (calculated) {
+        setNewPaymentPlan((prev) => ({
+          ...prev,
+          installmentAmount: calculated,
+        }));
+      }
+    } else {
+      // For one-time payment, installment = total price - deposit
+      const base = parseInt(getNumericValue(newPaymentPlan.totalPrice)) || 0;
+      const dep = parseInt(getNumericValue(newPaymentPlan.initialDeposit)) || 0;
+      setNewPaymentPlan((prev) => ({
+        ...prev,
+        installmentAmount: Math.max(0, base - dep).toString(),
+      }));
+    }
   };
 
   return (
@@ -1007,124 +1146,259 @@ export default function AddPropertyPage() {
           {/* Step 3: Pricing & Timeline */}
           {currentStep === 2 && (
             <div className="flex flex-col gap-4">
-              {/* Total Price and Total Unit */}
-              <div className="grid grid-cols-2 gap-4">
-                <div className="flex flex-col gap-2">
-                  <Label
-                    htmlFor="totalPrice"
-                    className="label-sm font-semibold text-[#36393f]"
-                  >
-                    Total Price (₦)
-                  </Label>
-                  <div className="relative">
-                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[#6B7280] body-sm">
-                      ₦
-                    </span>
-                    <Input
-                      id="totalPrice"
-                      type="text"
-                      inputMode="numeric"
-                      placeholder="e.g 770,000,000"
-                      value={
-                        formData.totalPrice
-                          ? formatCurrency(formData.totalPrice)
-                          : ""
-                      }
-                      onChange={(e) =>
-                        handleCurrencyChange("totalPrice", e.target.value)
-                      }
-                      className="h-10 rounded-lg pl-8 pr-4 py-2.5 border-none bg-[#f5f5f5] text-[#0e0e0f] placeholder:text-[#6B7280] body-sm"
-                    />
-                  </div>
-                </div>
-
-                <div className="flex flex-col gap-2">
-                  <Label
-                    htmlFor="totalUnit"
-                    className="label-sm font-semibold text-[#36393f]"
-                  >
-                    Total Unit
-                  </Label>
-                  <Select
-                    value={formData.totalUnit}
-                    onValueChange={(value) =>
-                      setFormData({ ...formData, totalUnit: value })
-                    }
-                  >
-                    <SelectTrigger
-                      id="totalUnit"
-                      className="h-10! rounded-lg px-4! py-2.5! border-none bg-[#f5f5f5] text-[#6B7280] placeholder:text-[#6B7280] body-sm w-full"
-                    >
-                      <SelectValue placeholder="Select unit" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="1">1 Unit</SelectItem>
-                      <SelectItem value="2-5">2-5 Units</SelectItem>
-                      <SelectItem value="6-10">6-10 Units</SelectItem>
-                      <SelectItem value="10+">10+ Units</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              {/* Initial Deposit */}
+              {/* Total Unit */}
               <div className="flex flex-col gap-2">
                 <Label
-                  htmlFor="initialDeposit"
+                  htmlFor="totalUnit"
                   className="label-sm font-semibold text-[#36393f]"
                 >
-                  Initial Deposit
+                  Total Unit
                 </Label>
-                <div className="relative">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[#6B7280] body-sm">
-                    ₦
-                  </span>
-                  <Input
-                    id="initialDeposit"
-                    type="text"
-                    inputMode="numeric"
-                    placeholder="e.g 50,000,000"
-                    value={
-                      formData.initialDeposit
-                        ? formatCurrency(formData.initialDeposit)
-                        : ""
-                    }
-                    onChange={(e) =>
-                      handleCurrencyChange("initialDeposit", e.target.value)
-                    }
-                    className="h-10 rounded-lg pl-8 pr-4 py-2.5 border-none bg-[#f5f5f5] text-[#0e0e0f] placeholder:text-[#6B7280] body-sm"
-                  />
-                </div>
+                <Select
+                  value={formData.totalUnit}
+                  onValueChange={(value) =>
+                    setFormData({ ...formData, totalUnit: value })
+                  }
+                >
+                  <SelectTrigger
+                    id="totalUnit"
+                    className="h-10! rounded-lg px-4! py-2.5! border-none bg-[#f5f5f5] text-[#6B7280] placeholder:text-[#6B7280] body-sm w-full"
+                  >
+                    <SelectValue placeholder="Select unit" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="1">1 Unit</SelectItem>
+                    <SelectItem value="2-5">2-5 Units</SelectItem>
+                    <SelectItem value="6-10">6-10 Units</SelectItem>
+                    <SelectItem value="10+">10+ Units</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
 
-              {/* Payment Plan Offered */}
-              <div className="flex flex-col gap-2">
+              {/* Payment Plans Section */}
+              <div className="flex flex-col gap-4">
                 <Label className="label-sm font-semibold text-[#36393f]">
-                  Payment Plan Offered
+                  Payment Plans
                 </Label>
-                <div className="grid grid-cols-4 gap-3">
-                  {[
-                    "Outright Payment",
-                    "12 months",
-                    "18 months",
-                    "24 months",
-                  ].map((plan) => (
-                    <button
-                      key={plan}
-                      type="button"
-                      onClick={() =>
-                        setFormData({ ...formData, paymentPlan: plan })
-                      }
-                      className={`h-10 rounded-lg px-4 py-2.5 body-sm font-medium transition-colors ${
-                        formData.paymentPlan === plan
-                          ? "bg-[#7d00ff] text-white"
-                          : "bg-[#f5f5f5] text-[#6B7280] hover:bg-[#e7e8ea]"
-                      }`}
-                    >
-                      {plan}
-                    </button>
-                  ))}
+
+                {/* Plan Type Selection */}
+                <div className="flex flex-col gap-3 p-4 bg-[#f9f9fb] rounded-lg border border-[#e7e8ea]">
+                  <h3 className="text-sm font-semibold text-[#0e0e0f]">
+                    Select Payment Plan Type
+                  </h3>
+
+                  <div className="grid grid-cols-4 gap-3">
+                    {[
+                      { value: "one-time", label: "One Time" },
+                      { value: "six-months", label: "6 Months" },
+                      { value: "twelve-months", label: "12 Months" },
+                      { value: "custom", label: "Custom" },
+                    ].map((option) => (
+                      <button
+                        key={option.value}
+                        type="button"
+                        onClick={() =>
+                          setNewPaymentPlan({
+                            ...newPaymentPlan,
+                            planType: option.value,
+                          })
+                        }
+                        className={`px-4 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                          newPaymentPlan.planType === option.value
+                            ? "bg-[#7d00ff] text-white"
+                            : "bg-white text-[#6B7280] border border-[#e7e8ea] hover:bg-[#f5f5f5]"
+                        }`}
+                      >
+                        {option.label}
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Hide form if one-time plan already exists and not editing one-time */}
+                  {
+                    <div className="grid grid-cols-2 gap-3">
+                      {/* Total Price */}
+                      <div className="flex flex-col gap-2">
+                        <Label className="label-sm font-semibold text-[#36393f]">
+                          Total Price (₦)
+                        </Label>
+                        <div className="relative">
+                          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[#6B7280] body-sm">
+                            ₦
+                          </span>
+                          <Input
+                            type="text"
+                            inputMode="numeric"
+                            placeholder="e.g 770,000,000"
+                            value={
+                              newPaymentPlan.totalPrice
+                                ? formatCurrency(newPaymentPlan.totalPrice)
+                                : ""
+                            }
+                            onChange={(e) => {
+                              const value = getNumericValue(e.target.value);
+                              setNewPaymentPlan({
+                                ...newPaymentPlan,
+                                totalPrice: value,
+                              });
+                              setTimeout(handlePlanDetailsChange, 0);
+                            }}
+                            className="h-10 rounded-lg pl-8 pr-4 py-2.5 border-none bg-white text-[#0e0e0f] placeholder:text-[#6B7280] body-sm"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Initial Deposit */}
+                      <div className="flex flex-col gap-2">
+                        <Label className="label-sm font-semibold text-[#36393f]">
+                          Initial Deposit (₦)
+                        </Label>
+                        <div className="relative">
+                          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[#6B7280] body-sm">
+                            ₦
+                          </span>
+                          <Input
+                            type="text"
+                            inputMode="numeric"
+                            placeholder="e.g 50,000,000"
+                            value={
+                              newPaymentPlan.initialDeposit
+                                ? formatCurrency(newPaymentPlan.initialDeposit)
+                                : ""
+                            }
+                            onChange={(e) => {
+                              const value = getNumericValue(e.target.value);
+                              setNewPaymentPlan({
+                                ...newPaymentPlan,
+                                initialDeposit: value,
+                              });
+                              setTimeout(handlePlanDetailsChange, 0);
+                            }}
+                            className="h-10 rounded-lg pl-8 pr-4 py-2.5 border-none bg-white text-[#0e0e0f] placeholder:text-[#6B7280] body-sm"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  }
+
+                  {/* Custom Duration - Only for custom plans */}
+                  {newPaymentPlan.planType === "custom" && (
+                    <div className="flex flex-col gap-2">
+                      <Label className="label-sm font-semibold text-[#36393f]">
+                        Duration (months)
+                      </Label>
+                      <Input
+                        type="text"
+                        inputMode="numeric"
+                        placeholder="e.g., 3, 9, 15"
+                        value={newPaymentPlan.customDuration}
+                        onChange={(e) => {
+                          const value = getNumericValue(e.target.value);
+                          setNewPaymentPlan({
+                            ...newPaymentPlan,
+                            customDuration: value,
+                          });
+                          setTimeout(handlePlanDetailsChange, 0);
+                        }}
+                        className="h-10 rounded-lg px-4 py-2.5 border-none bg-white text-[#0e0e0f] placeholder:text-[#6B7280] body-sm"
+                      />
+                    </div>
+                  )}
+
+                  {/* Installment Amount Display */}
+                  {newPaymentPlan.installmentAmount && (
+                    <div className="flex flex-col gap-2">
+                      <Label className="label-sm font-semibold text-[#36393f]">
+                        Amount per{" "}
+                        {newPaymentPlan.planType === "one-time"
+                          ? "Payment"
+                          : "Month"}
+                        (₦)
+                      </Label>
+                      <div className="relative">
+                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[#6B7280] body-sm">
+                          ₦
+                        </span>
+                        <Input
+                          type="text"
+                          disabled
+                          value={formatCurrency(
+                            newPaymentPlan.installmentAmount,
+                          )}
+                          className="h-10 rounded-lg pl-8 pr-4 py-2.5 border-none bg-[#f5f5f5] text-[#0e0e0f] body-sm"
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  <Button
+                    type="button"
+                    onClick={handleAddPaymentPlan}
+                    disabled={
+                      !newPaymentPlan.totalPrice ||
+                      !newPaymentPlan.initialDeposit
+                    }
+                    className="bg-[#7d00ff] hover:bg-[#6b00d9] text-white label-sm rounded-lg font-medium px-4 py-2 h-10 w-full disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <Icon
+                      icon="ic:baseline-plus"
+                      width="16"
+                      height="16"
+                      className="mr-2"
+                    />
+                    Add This Plan
+                  </Button>
                 </div>
+
+                {/* Display Added Payment Plans */}
+                {formData.paymentPlans.length > 0 && (
+                  <div className="flex flex-col gap-3">
+                    <Label className="label-sm font-semibold text-[#36393f]">
+                      Added Plans ({formData.paymentPlans.length})
+                    </Label>
+                    <div className="space-y-2">
+                      {formData.paymentPlans.map((plan) => (
+                        <div
+                          key={plan.id}
+                          className="flex items-center justify-between p-3 bg-[#f5f5f5] rounded-lg border border-[#e7e8ea]"
+                        >
+                          <div className="flex-1">
+                            <p className="body-sm font-semibold text-[#0e0e0f]">
+                              {plan.name}
+                            </p>
+                            <div className="flex gap-4 mt-1">
+                              <span className="text-xs text-[#6B7280]">
+                                ₦{formatCurrency(plan.totalPrice)}
+                              </span>
+                              <span className="text-xs text-[#6B7280]">
+                                Deposit: ₦{formatCurrency(plan.initialDeposit)}
+                              </span>
+                              {parseInt(plan.duration) > 0 && (
+                                <span className="text-xs text-[#6B7280]">
+                                  ₦{formatCurrency(plan.installmentAmount)}
+                                  /month
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                          <Button
+                            type="button"
+                            onClick={() => handleRemovePaymentPlan(plan.id)}
+                            variant="ghost"
+                            size="sm"
+                            className="text-[#dc2626] hover:text-[#b91c1c] hover:bg-[#fee2e2]"
+                          >
+                            <Icon
+                              icon="ic:baseline-delete"
+                              width="18"
+                              height="18"
+                            />
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           )}

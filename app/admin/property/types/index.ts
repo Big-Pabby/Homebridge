@@ -40,7 +40,14 @@ export interface Property {
   square_footage: number | null;
 
   amenities: string[] | null;
-  media: unknown[];
+  media: {
+    id: string;
+    created_at: string;
+    updated_at: string;
+    property_id: string;
+    media_url: string;
+    media_type: "image" | "video";
+  }[];
 
   payment_plans: PaymentPlan[];
   documents: unknown[];

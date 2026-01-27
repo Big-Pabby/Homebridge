@@ -34,24 +34,9 @@ import BedIcon from "@/public/icons/bed.svg";
 import BathIcon from "@/public/icons/bath.svg";
 import SqmIcon from "@/public/icons/sqm.svg";
 import { useProperties } from "./hooks";
+import { Property } from "./types";
 
-interface ApiProperty {
-  id: string;
-  title: string;
-  location: string;
-  price?: number;
-  bedrooms: number | null;
-  bathrooms: number | null;
-  square_footage: string | null;
-  type?: string;
-  total_units: number;
-  sold_units: number;
-  status: string;
-  featured_image: string;
-  is_provider_verified: boolean;
-  is_insured: boolean;
-  initial_deposit?: string;
-}
+
 
 export default function PropertyPage() {
   const [page, setPage] = useState(1);
@@ -132,12 +117,12 @@ export default function PropertyPage() {
     maxPrice ||
     providerFilter;
 
-  const properties = data?.data?.data || [];
-  const pagination = data?.data || {
-    total: 0,
-    page: 1,
-    limit: 12,
-    totalPages: 0,
+  const properties = data?.data || [];
+  const pagination = {
+    total: data?.total || 0,
+    page: data?.page || 1,
+    limit: data?.limit || 12,
+    totalPages: data?.totalPages || 0,
   };
 
   const handleTabChange = (tab: "all" | "active" | "sold") => {
@@ -501,12 +486,14 @@ export default function PropertyPage() {
   );
 }
 
-function PropertyCard({ property }: { property: ApiProperty }) {
+function PropertyCard({ property }: { property: Property }) {
   const formatPrice = (price: number | string | undefined) => {
     if (!price && price !== 0) return "₦ 0";
     return `₦ ${Math.floor(Number(price)).toLocaleString("en-US")}`;
   };
-
+  const oneTimePlan = property.payment_plans?.find(
+    (plan) => plan.duration_months === 0,
+  );
   const formatStatus = (status: string) => {
     if (status === "ACTIVE") return "Completed";
     if (status === "SOLD_OUT") return "Sold Out";
@@ -522,7 +509,7 @@ function PropertyCard({ property }: { property: ApiProperty }) {
   const availableUnits = property.total_units - property.sold_units;
 
   return (
-    <div className="bg-white rounded-2xl overflow-hidden cursor-pointer hover:shadow-lg transition-shadow p-4 space-y-4">
+    <Link href={`/admin/property/${property.id}`} className="bg-white rounded-2xl overflow-hidden cursor-pointer hover:shadow-lg transition-shadow p-4 space-y-4">
       {/* Image with Badge */}
       <div className="relative h-[190px] rounded-lg overflow-hidden w-full">
         <Image
@@ -548,7 +535,7 @@ function PropertyCard({ property }: { property: ApiProperty }) {
           <div className="flex items-center justify-between gap-6">
             <div className="flex items-center gap-2 flex-1 min-w-0">
               <h3
-                className="text-lg font-semibold text-[#0e0e0f] truncate"
+                className="text-lg capitalize font-semibold text-[#0e0e0f] truncate"
                 style={{ letterSpacing: "-0.16px" }}
               >
                 {property.title}
@@ -582,7 +569,7 @@ function PropertyCard({ property }: { property: ApiProperty }) {
 
         {/* Price */}
         <div className="text-2xl font-medium text-[#0e0e0f]">
-          {formatPrice(property.initial_deposit)}
+          {formatPrice(oneTimePlan?.price)}
         </div>
 
         {/* Details and Units */}
@@ -630,6 +617,6 @@ function PropertyCard({ property }: { property: ApiProperty }) {
           </span>
         </div>
       </div>
-    </div>
+    </Link>
   );
 }
