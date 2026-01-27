@@ -48,7 +48,7 @@ export const useAdminLogin = () => {
         "auth/login",
         credentials
       );
-      return response;
+      return response.data;
     },
     onSuccess: (data) => {
       // Store tokens in localStorage
