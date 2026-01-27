@@ -8,27 +8,24 @@ import { admin } from "@/lib/service";
 import { ACCESS_TOKEN, REFRESH_TOKEN } from "@/lib/constants";
 import { useUserStore } from "@/lib/store/user-store";
 import { toast } from "@/lib/utils/toast";
+import { ApiResponse } from "@/types/api";
 
 interface LoginResponse {
-  success: boolean;
-  message: string;
-  data: {
-    id: string;
-    created_at: string;
-    updated_at: string;
-    full_name: string;
-    email: string;
-    is_active: boolean;
-    role: string;
-    last_login_at: string;
-    access: {
-      token: string;
-      expires_in: string;
-    };
-    refresh: {
-      token: string;
-      expires_in: string;
-    };
+  id: string;
+  created_at: string;
+  updated_at: string;
+  full_name: string;
+  email: string;
+  is_active: boolean;
+  role: string;
+  last_login_at: string;
+  access: {
+    token: string;
+    expires_in: string;
+  };
+  refresh: {
+    token: string;
+    expires_in: string;
   };
 }
 
@@ -41,14 +38,12 @@ export const useAdminLogin = () => {
   const setUser = useUserStore((state) => state.setUser);
 
   return useMutation({
-    mutationFn: async (
-      credentials: LoginCredentials
-    ): Promise<LoginResponse> => {
+    mutationFn: async (credentials: LoginCredentials) => {
       const response = await admin.post<LoginResponse>(
         "auth/login",
-        credentials
+        credentials,
       );
-      return response.data;
+      return response;
     },
     onSuccess: (data) => {
       // Store tokens in localStorage
